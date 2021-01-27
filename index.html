@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- <link rel="stylesheet" type="text/css" href="http://unpkg.com/view-design/dist/styles/iview.css"> -->
+</head>
+<style>
+    html,body{
+        height:100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        font-size: 16px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    } 
+    #app{
+        width: 80%;
+        height: 80%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .anchorBL{
+        display: none !important;
+    }
+    .amap-e{
+        z-index: 999999 !important;
+    }
+</style>
+
+<body>
+    <div id="app">
+        <div id="container" ref = 'map' style="width: 100%;height: 100%"></div>
+    </div>
+    <script type="text/javascript" src="http://vuejs.org/js/vue.min.js"></script>
+    <!-- <script type="text/javascript" src="http://unpkg.com/view-design/dist/iview.min.js"></script> -->
+    <script type="text/javascript" src="https://api.map.baidu.com/api?v=3.0&type=webgl&ak=uP4jE6POSBTecvisdLoEfoUENBthGNwT&__ec_v__=20190126"></script>
+    <!-- <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.15&key=75b51b951b9b8c40c1adc9e1fb11d02a&plugin=AMap.MarkerClusterer"></script>
+	<script src="https://a.amap.com/jsapi_demos/static/demo-center/js/demoutils.js"></script>
+	<link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css" />
+    <script src="https://webapi.amap.com/ui/1.0/main.js?v=1.0.11"></script> -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts@5.0.0/dist/echarts.min.js"></script>
+    <script src="./js/bmap.js"></script>
+    <script src="./js/echarts-amap.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script type="text/javascript">
+        new Vue({
+            el: '#app',
+            data() {
+                return {
+                    zhouqi: null,
+                    zhibiao: null,
+                    timer: null,
+                    timer2: null,
+                    formItem: {
+                        name: "1",
+                        zhan: "1"
+                    },
+                    min: 0,
+                    max: 5000,
+                    app: {},
+                    shujuu: [],
+                    opp: [],
+                    time: [],
+                    timeOne: [],
+                    pieces: [],
+                }
+            },
+            computed: {
+
+            },
+            methods: {
+                //创建百度地图
+                creatMap() {
+                    const myChart = echarts.init(document.getElementById('container'));
+                    const option = {
+                        bmap: {
+                            center: [114.064506, 22.644251], //当前显示地图中心点
+                            zoom: 12, //放大倍数
+                            roam: true, //是否允许用户调节地图		
+                            mapStyle: {
+                                styleJson: [{
+                                    "featureType": "district",
+                                    "elementType": "labels",
+                                    "stylers": {
+                                        "visibility": "on"
+                                    }
+                                },
+                                {
+                                    "featureType": "district",
+                                    "elementType": "labels.text.fill",
+                                    "stylers": {
+                                        "weight": 90,
+                                        "color": "#d0021b66"
+                                    }
+                                },
+
+                                {
+                                    "featureType": "districtlabel", //行政区域文字
+                                    "elementType": "labels.text.stroke",
+                                    "stylers": {
+                                        "weight": 5,
+                                        "color": "#7ed32100"
+                                    }
+                                },
+                                {
+                                    'featureType': 'highway', //公路
+                                    'elementType': 'labels',
+                                    'stylers': {
+                                        'visibility': 'off'
+                                    }
+                                }, {
+                                    'featureType': 'subway', //地铁
+                                    'elementType': 'all',
+                                    'stylers': {
+                                        'visibility': 'off'
+                                    }
+                                }]
+                            }
+                        },
+                    }
+                    myChart.setOption(option)
+                },
+                // 创建高德坐标系
+                getAmap(){
+                    const myChart = echarts.init(document.getElementById('container'));
+                    const option = {
+                        // 加载 amap 组件
+                        amap: {
+                            // 高德地图中心经纬度
+                            center: [114.117493, 22.621609],
+                            // 高德地图缩放
+                            zoom: 12,
+                            // 启用resize
+                            resizeEnable: true,
+                            // 移动过程中实时渲染 默认为true 如数据量较大 建议置为false
+                            renderOnMoving: false,
+                            // 自定义地图样式主题
+                            mapStyle: 'amap://styles/0d959393dbe58f76942feead63ee6cc6'
+                            // 说明：如果想要添加卫星、路网等图层
+                            // 暂时先不要使用layers配置，因为存在Bug
+                            // 建议使用amap.add的方式，使用方式参见最下方代码
+
+                            // 其他高德地图支持的初始配置项都可以在这里配置
+                        }
+                    }
+                    myChart.setOption(option)
+                },
+                getmap() {
+                    //获取当前echart实例
+                    // const myChart = echarts.getInstanceByDom(this.$refs.map)
+                    // 从ECharts实例中取到高德地图组件实例
+                    // const amap = chart.getModel().getComponent('amap').getAMap();
+                    // 添加百度地图插件 map为当前地图实例
+                    // const map = myChart.getModel().getComponent('bmap').getBMap();
+
+
+
+                    let map = new BMapGL.Map("container");
+                    var point = new BMapGL.Point(116.404, 39.915);
+                    map.centerAndZoom(point, 15);
+                    map.setMapStyleV2({
+                        styleId: '89a352e2f2e7c45041edf37fbdf9f0e8'
+                    });
+                    map.setMapStyleV2({
+        		  	    styleId: '6db09623ff16ee7e9dd1734b23f0826b'
+                    });
+                    
+                },
+                drawHeat() {
+                    var that = this
+                    $.get('./data.json', function (data) {
+                        var points = [].concat.apply([], data.map(function (track) {
+                            return track.map(function (seg) {
+                                return seg.coord.concat([1]);
+                            });
+                        }));
+                        let myChart = echarts.init(that.$refs.map);
+                        let option = {
+                            baseOption: {
+                                animation: false,
+                                bmap: {
+                                    center: [120.13066322374, 30.240018034923],
+                                    zoom: 14,
+                                    roam: true
+                                },
+                                visualMap: {
+                                    show: false,
+                                    top: 'top',
+                                    min: 0,
+                                    max: 5,
+                                    seriesIndex: 0,
+                                    calculable: true,
+                                    inRange: {
+                                        color: ['blue', 'blue', 'green', 'yellow', 'red']
+                                    }
+                                },
+                                series: [{
+                                    type: 'heatmap',
+                                    coordinateSystem: 'bmap',
+                                    data: points,
+                                    pointSize: 5,
+                                    blurSize: 6
+                                }]
+                            }
+                        }
+                        myChart.setOption(option);
+                    })
+                },
+                //充电量
+			    func() {
+                    var that = this
+                    this.time = [];
+                    $.get('./heatMap.json', function (data) {
+                        this.shujuu = data
+                        //循环map
+                        for (var key in data) {
+                            that.time.push(key)
+                        }
+                        //改变  它的时间排序
+                        that.time.sort()
+                        //找到 key所对应的 value值
+                        that.opp = [];
+                        for (var i = 0; i < that.time.length; i++) {
+                            that.opp.push(this.shujuu[that.time[i]])
+                        }
+                        let array = [];
+                        let allData = [];
+                        let average = 0;
+                        if (that.opp.length != 0) {
+                            for (var i = 0; i < that.opp.length; i++) {
+                                if (that.opp[i] == null) {
+                                    continue;
+                                } else {
+                                    for (var j = 0; j < that.opp[i].length; j++) {
+                                        allData.push(that.opp[i][j].value);
+                                        array.push(that.opp[i][j].value[2]);
+                                    }
+                                }
+                            }
+                        }
+                        if (array.length != 0) {
+                            let item = [];
+                            for (let i = 0; i < array.length; i++) {
+                                item.push(that.toNum(array[i]))
+                            }
+                            let sum = 0;
+                            for (let i = 0; i < item.length; i++) {
+                                sum += item[i];
+                            }
+                            average = parseInt(sum / item.length);
+                            item = [];
+                        }
+                        if (average < 10) {
+                            average = 10;
+                        }
+                        let one = parseInt(average * 1.5);
+                        let two = parseInt(average * 1.2);
+                        let three = parseInt(average * 0.8);
+                        let four = parseInt(average * 0.5);
+                        this.max = one;
+                        if (this.max == "0") {
+                            this.max = 1;
+                        }
+                        this.pieces = [
+                            {
+                                min: two,
+                                max: one,
+                                label: two + '-' + one + ' %'
+                            },
+                            {
+                                min: average,
+                                max: two,
+                                label: average + '-' + two + ' %'
+                            },
+                            {
+                                min: three,
+                                max: average,
+                                label: three + '-' + average + ' %'
+                            },
+                            {
+                                min: four,
+                                max: three,
+                                label: four + '-' + three + ' %'
+                            },
+                            {
+                                min: 0,
+                                max: four,
+                                label: '0-' + four + ' %'
+                            },
+                        ]
+                        that.myChart(0, this.max);
+                    })
+                },
+                myChart(mn, mx) {
+                    var that = this
+                    let myChart = echarts.init(this.$refs.map);
+                    let option = {
+                        baseOption: {
+                            title: { //显示的标题
+                                //  text: '深圳市各区域充电量等维度监控信息',
+                                left: 'center',
+                                textStyle: {
+                                    color: 'black',
+                                    fontSize: 20,
+                                }
+                            },
+                            animation: false,
+                            timeline: {
+                                show: true, //开启时间线下方的时间线
+                                autoPlay: true, //是否开启自动
+                                playInterval: 10000, //跳转间隔时间
+                                loop: true,
+                                data: that.time,
+                                axisType: 'category',
+                                symbolSize: 20, //控制 圆圈大小,
+                                padding: 20,
+                                controlStyle: {
+                                    itemSize: 20
+                                },
+                                lineStyle: {
+                                    color: '#0782E2',
+                                    width: 6
+                                }, //  时间轴线条颜色
+                                label: { //显示下方时间点标签的样式
+                                    normal: {
+                                        textStyle: {
+                                            color: '#9CC5FF',
+                                            fontSize: 15,
+                                        },
+                                        padding: 40
+                                    },
+                                }
+
+                            },
+                            tooltip: { //显示时间刻度名字
+                                show: true,
+                                formatter: function (params) {
+                                    return params.name;
+                                }
+                            },
+                            geo: {
+                                zlevel: 2,//geo显示级别，默认是0
+                                map: 'china',//地图名
+                                roam: false,//设置为false,不启动roam就无所谓缩放拖曳同步了
+                                zoom: 1.1,//缩放级别
+                            },
+                            visualMap: { //用于开启自定义的视觉颜色条框
+                                // show: false,                   //是否显示 visualMap-continuous 组件。如果设置为 false，不会显示，但是数据映射的功能还存在
+                                type: 'piecewise',
+                                top: 'bottom',
+                                min: mn,
+                                max: mx,
+                                pieces: this.pieces.reverse(),
+                                splitNumber: 5, //显示几个区间
+                                backgroundColor: "rgba(255,255,255,0.8)", //标题背景色
+                                textStyle: {
+                                    fontSize: 20
+                                },
+                                padding: 20,
+                                inRange: {
+                                    color: ['#FFFFCC', '#FFCC00', '#FF6600', '#FF3399', '#FF0000']
+                                }
+                            },
+                            series: [{
+                                name: "深圳市各区域充电量等维度监控信息",
+                                type: 'heatmap', //类型为热力图  //设置为scatter才会显示文字提示
+                                // coordinateSystem: 'bmap', //采用百度的坐标系
+                                coordinateSystem: 'amap', //采用高德的坐标系
+                                pointSize: 20, //显示点的大小
+                                blurSize: 50 //模糊显示点  其放大倍数越高，显示点的颜色越浅
+                            }]
+                        },
+                        options: [{
+                            series: [{
+                                data: that.opp[0] == null ? null : that.opp[0].map(function (value, index) {
+                                    return value.value;
+                                })
+                            }]
+                        },
+                        {
+                            series: [{
+                                data: that.opp[1] == null ? null : that.opp[1].map(function (value, index) {
+                                    return value.value;
+                                })
+                            }]
+                        },
+                        {
+                            series: [{
+                                data: that.opp[2] == null ? null : that.opp[2].map(function (value, index) {
+                                    return value.value;
+                                })
+                            }]
+                        },
+                        {
+                            series: [{
+                                data: that.opp[3] == null ? null : that.opp[3].map(function (value, index) {
+                                    return value.value;
+                                })
+                            }]
+                        },
+
+                        ]
+                    };
+
+                    myChart.setOption(option);
+
+                },
+                // 将百分数转化成小数
+                toNum(percent) {
+                    var num = percent.replace("%", "") / 100;
+                    return num;
+                },
+                // 将小数转成百分数(保留2位小数）
+                toPercent(num) {
+                    var percent = Number(num * 100).toFixed(2) + "%";
+                    return percent;
+                },
+                loadBMap(ak) {
+                    return new Promise(function (resolve, reject) {
+                        if (typeof BMap !== 'undefined') {
+                            resolve(BMap)
+                            return true
+                        }
+                        window.onBMapCallback = function () {
+                            resolve(BMap)
+                        }
+                        let script = document.createElement('script')
+                        script.type = 'text/javascript'
+                        script.src = 'https://api.map.baidu.com/api?v=3.0&ak=' + ak + '&type=webgl&__ec_v__=20190126&callback=onBMapCallback'
+                        script.onerror = reject
+                        document.head.appendChild(script)
+                    })
+                }
+            },
+            beforeMount() {
+                
+            },
+            mounted() {
+                // this.$nextTick(() => {
+                //     this.loadBMap("q8n6ESrbcDwbpAQmnPD9YBpXgIBUkeOa").then(() => {
+                //         this.creatMap()
+                //         this.getmap()
+                //         // this.drawHeat()
+                //         this.func()
+                //     })
+                // })
+                this.$nextTick(() => {
+                    this.creatMap()
+                    this.getMap()
+                    this.func()         
+                })
+            },
+            watch: {
+
+            }
+        })
+    </script>
+</body>
+
+</html>

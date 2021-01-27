@@ -1,0 +1,134 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <title>自定义样式信息窗体</title>
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css"/>
+    <style>
+        html, body, #container {
+            height: 100%;
+            width: 100%;
+        }
+ 
+        .custom-input-card{
+            width: 18rem;
+        }
+ 
+        .custom-input-card .btn:last-child{
+            margin-left: 1rem;
+        }
+ 
+        .content-window-card{
+            position: relative;
+            width: 23rem;
+            padding: 0.75rem 0 0 1.25rem;
+            box-shadow: none;
+            bottom: 0;
+            left: 0;
+        }
+ 
+        .content-window-card p{
+            height: 2rem;
+        }
+        #echartBox{
+            width: 400px;
+            height: 400px;
+        }
+    </style>
+</head>
+<body>
+<div id="container"></div>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+<script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.15&key=您申请的key值"></script>
+<script type="text/javascript">
+    var infoWindow;
+    var map = new AMap.Map("container", {
+        resizeEnable: true,
+        center: [116.473188,39.993253],
+        zoom: 13
+    });
+ 
+    //在指定位置打开信息窗体
+    function openInfo() {
+        //构建信息窗体中显示的内容
+         
+ 
+        infoWindow = new AMap.InfoWindow({
+            content: "<div id='echartBox'></div>"  //使用默认信息窗体框样式，显示信息内容
+        });
+ 
+        infoWindow.open(map, map.getCenter());
+        var timer=setInterval(function(){
+            var dom = document.getElementById("echartBox");
+            if(dom){
+                alert()
+ 
+                console.log(dom)
+                echartsInit()
+                clearInterval(timer)
+            }
+        },1000)
+         
+    }
+    openInfo()
+    function echartsInit(){
+     
+         
+        var dom = document.getElementById("echartBox");
+        var myChart = echarts.init(dom);
+        var app = {};
+        option = null;
+        option = {
+            tooltip: {
+                trigger: 'item',
+                formatter: '{a} <br/>{b}: {c} ({d}%)'
+            },
+            legend: {
+                orient: 'vertical',
+                left: 10,
+                data: ['直接访问', '邮件营销', '联盟广告', '视频广告', '搜索引擎']
+            },
+            color:['#F01F7B','#F0B548','#57D627','#1FA9ED','#C21EE6'],
+            series: [
+                {
+                    name: '访问来源',
+                    type: 'pie',
+                    width:400,
+                    height:400,
+                    radius: ['50%', '70%'],
+                    avoidLabelOverlap: false,
+                    label: {
+                        show: false,
+                        position: 'center'
+                    },
+                    emphasis: {
+                        label: {
+                            show: true,
+                            fontSize: '30',
+                            fontWeight: 'bold'
+                        }
+                    },
+                    labelLine: {
+                        show: false
+                    },
+                    data: [
+                        {value: 335, name: '直接访问'},
+                        {value: 310, name: '邮件营销'},
+                        {value: 234, name: '联盟广告'},
+                        {value: 135, name: '视频广告'},
+                        {value: 148, name: '搜索引擎'}
+                    ]
+                }
+            ]
+        };
+        ;
+        if (option && typeof option === "object") {
+            myChart.setOption(option, true);
+        }
+    }
+    
+</script>
+</body>
+</html>
